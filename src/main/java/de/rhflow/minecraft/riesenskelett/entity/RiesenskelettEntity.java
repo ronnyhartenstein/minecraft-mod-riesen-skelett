@@ -60,11 +60,17 @@ public class RiesenskelettEntity extends PathAwareEntity implements JumpingMount
 	private static final float CRATER_FALL_DISTANCE = 50.0f;
 	private static final int MAX_CRATER_BLOCKS = 150;
 
+	/** Zum Testen: jeder Sprung reißt beim Landen einen Krater, egal wie hoch. Später wieder auf false. */
+	private static final boolean CRATER_AFTER_EVERY_JUMP = true;
+
 	/** Wie weit die Beine pro gelaufenem Block schwingen – kleiner = langsamere, größere Schritte. */
 	private static final float LIMB_SWING_PER_BLOCK = 0.5f;
 
 	/** Sprungkraft 0..1, gesetzt über die Sprungleiste; 0 = kein Sprung angefordert. */
 	private float jumpStrength;
+
+	/** Nur auf dem Server: wurde seit dem letzten Aufsetzen gesprungen? */
+	private boolean jumpedSinceLanding;
 
 	public RiesenskelettEntity(EntityType<? extends PathAwareEntity> entityType, World world) {
 		super(entityType, world);
@@ -159,8 +165,8 @@ public class RiesenskelettEntity extends PathAwareEntity implements JumpingMount
 	@Override
 	protected void tickControlled(PlayerEntity controllingPlayer, Vec3d movementInput) {
 		super.tickControlled(controllingPlayer, movementInput);
-		// Blickrichtung vom Reiter übernehmen (Kopf nickt nur halb so stark mit).
-		this.setRotation(controllingPlayer.getYaw(), controllingPlayer.getPitch() * 0.5f);
+		// Blickrichtung vom Reiter übernehmen. Der Kopf nickt nicht mit, sonst kippt er dem Reiter vors Gesicht.
+		this.setRotation(controllingPlayer.getYaw(), 0.0f);
 		this.prevYaw = this.bodyYaw = this.headYaw = this.getYaw();
 
 		if (this.isOnGround()) {
@@ -259,6 +265,8 @@ public class RiesenskelettEntity extends PathAwareEntity implements JumpingMount
 
 	@Override
 	public void startJumping(int height) {
+		// Wird auf dem Server aufgerufen, wenn der Reiter die Leertaste loslässt.
+		this.jumpedSinceLanding = true;
 		this.playSound(SoundEvents.ENTITY_SKELETON_STEP, 2.0f, 0.4f);
 	}
 
@@ -282,7 +290,10 @@ public class RiesenskelettEntity extends PathAwareEntity implements JumpingMount
 
 	@Override
 	public boolean handleFallDamage(float fallDistance, float damageMultiplier, DamageSource damageSource) {
-		if (fallDistance > CRATER_FALL_DISTANCE && this.getWorld() instanceof ServerWorld serverWorld) {
+		boolean jumped = this.jumpedSinceLanding;
+		this.jumpedSinceLanding = false;
+		boolean smash = fallDistance > CRATER_FALL_DISTANCE || (CRATER_AFTER_EVERY_JUMP && jumped);
+		if (smash && this.getWorld() instanceof ServerWorld serverWorld) {
 			this.smashCrater(serverWorld, fallDistance);
 		}
 		return false; // Das Skelett selbst nimmt keinen Fallschaden.
@@ -305,7 +316,7 @@ public class RiesenskelettEntity extends PathAwareEntity implements JumpingMount
 		}
 
 		// Je tiefer der Sturz, desto größer der Krater (gedeckelt).
-		int radius = Math.min(5 + (int) ((fallDistance - CRATER_FALL_DISTANCE) / 25.0f), 8);
+		int radius = Math.min(5 + (int) (Math.max(fallDistance - CRATER_FALL_DISTANCE, 0.0f) / 25.0f), 8);
 		int depth = 3;
 
 		List<BlockPos> candidates = new ArrayList<>();
