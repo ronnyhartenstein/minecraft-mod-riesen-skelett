@@ -9,6 +9,7 @@ import org.jetbrains.annotations.Nullable;
 import net.minecraft.block.BlockState;
 import net.minecraft.entity.Dismounting;
 import net.minecraft.entity.Entity;
+import net.minecraft.entity.EquipmentSlot;
 import net.minecraft.entity.EntityType;
 import net.minecraft.entity.FallingBlockEntity;
 import net.minecraft.entity.JumpingMount;
@@ -23,6 +24,8 @@ import net.minecraft.entity.damage.DamageTypes;
 import net.minecraft.registry.tag.DamageTypeTags;
 import net.minecraft.entity.mob.PathAwareEntity;
 import net.minecraft.entity.player.PlayerEntity;
+import net.minecraft.item.ItemStack;
+import net.minecraft.item.Items;
 import net.minecraft.particle.ParticleTypes;
 import net.minecraft.server.world.ServerWorld;
 import net.minecraft.sound.SoundCategory;
@@ -83,6 +86,8 @@ public class RiesenskelettEntity extends PathAwareEntity implements JumpingMount
 
 	public RiesenskelettEntity(EntityType<? extends PathAwareEntity> entityType, World world) {
 		super(entityType, world);
+		// Der Bogen ist nur Deko für die Pfeile – er fällt beim Tod nicht runter.
+		this.setEquipmentDropChance(EquipmentSlot.MAINHAND, 0.0f);
 	}
 
 	public static DefaultAttributeContainer.Builder createRiesenskelettAttributes() {
@@ -205,6 +210,10 @@ public class RiesenskelettEntity extends PathAwareEntity implements JumpingMount
 	@Override
 	public void tick() {
 		super.tick();
+		// Wie das Original-Skelett immer einen Bogen in der Hand (auch bei schon gesetzten Riesenskeletten).
+		if (!this.getWorld().isClient && this.getMainHandStack().isEmpty()) {
+			this.equipStack(EquipmentSlot.MAINHAND, new ItemStack(Items.BOW));
+		}
 		// Der Reiter sitzt 20 Blöcke hoch – bei Sprüngen und Stürzen soll ihm nichts passieren.
 		for (Entity passenger : this.getPassengerList()) {
 			passenger.onLanding();
