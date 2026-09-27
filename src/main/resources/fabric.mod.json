@@ -1,0 +1,30 @@
+{
+	"schemaVersion": 1,
+	"id": "riesenskelett",
+	"version": "${version}",
+	"name": "Riesenskelett",
+	"description": "Ein 20 Blöcke hohes Skelett zum Reiten: man sitzt oben auf dem Kopf, steuert es mit WASD, es steigt 8 Blöcke hoch, springt bis zu 20 Blöcke und reißt nach einem tiefen Sturz einen Krater.",
+	"authors": [
+		"Ronny & Sohn"
+	],
+	"contact": {
+		"repo": "https://github.com/ronnyhartenstein/minecraft-mod-riesen-skelett"
+	},
+	"license": "CC0-1.0",
+	"icon": "assets/riesenskelett/icon.png",
+	"environment": "*",
+	"entrypoints": {
+		"main": [
+			"de.rhflow.minecraft.riesenskelett.RiesenskelettMod"
+		],
+		"client": [
+			"de.rhflow.minecraft.riesenskelett.RiesenskelettClient"
+		]
+	},
+	"depends": {
+		"fabricloader": ">=0.16.0",
+		"minecraft": "~1.21.1",
+		"java": ">=21",
+		"fabric-api": "*"
+	}
+}
