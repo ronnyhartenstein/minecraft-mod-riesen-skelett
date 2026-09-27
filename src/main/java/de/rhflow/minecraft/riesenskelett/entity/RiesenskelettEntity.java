@@ -20,6 +20,7 @@ import net.minecraft.entity.attribute.DefaultAttributeContainer;
 import net.minecraft.entity.attribute.EntityAttributes;
 import net.minecraft.entity.damage.DamageSource;
 import net.minecraft.entity.damage.DamageTypes;
+import net.minecraft.registry.tag.DamageTypeTags;
 import net.minecraft.entity.mob.PathAwareEntity;
 import net.minecraft.entity.player.PlayerEntity;
 import net.minecraft.particle.ParticleTypes;
@@ -45,6 +46,7 @@ import net.minecraft.world.World;
  *   <li>Leertaste halten und loslassen → Sprung bis 20 Blöcke hoch (Sprungleiste wie beim Pferd).</li>
  *   <li>Fällt es tiefer als 50 Blöcke, reißt es beim Aufschlag einen Krater:
  *       die Blöcke darunter fliegen zur Seite weg ({@link #smashCrater(ServerWorld, float)}).</li>
+ *   <li>Linksklick → verschießt einen Riesenpfeil, der beim Aufkommen explodiert ({@link #shootRiesenpfeil(PlayerEntity)}).</li>
  *   <li>Schleichen → man steigt ab und landet sicher neben dem Fuß.</li>
  * </ul>
  */
@@ -63,6 +65,10 @@ public class RiesenskelettEntity extends PathAwareEntity implements JumpingMount
 	/** Zum Testen: jeder Sprung reißt beim Landen einen Krater, egal wie hoch. Später wieder auf false. */
 	private static final boolean CRATER_AFTER_EVERY_JUMP = true;
 
+	/** Mindestabstand zwischen zwei Schüssen (in Ticks, 20 = 1 Sekunde). */
+	private static final int SHOOT_COOLDOWN_TICKS = 10;
+	private static final float ARROW_SPEED = 3.0f;
+
 	/** Wie weit die Beine pro gelaufenem Block schwingen – kleiner = langsamere, größere Schritte. */
 	private static final float LIMB_SWING_PER_BLOCK = 0.5f;
 
@@ -71,6 +77,9 @@ public class RiesenskelettEntity extends PathAwareEntity implements JumpingMount
 
 	/** Nur auf dem Server: wurde seit dem letzten Aufsetzen gesprungen? */
 	private boolean jumpedSinceLanding;
+
+	/** Nur auf dem Server: Weltzeit des letzten Schusses. */
+	private long lastShotTime;
 
 	public RiesenskelettEntity(EntityType<? extends PathAwareEntity> entityType, World world) {
 		super(entityType, world);
@@ -131,12 +140,13 @@ public class RiesenskelettEntity extends PathAwareEntity implements JumpingMount
 		return false;
 	}
 
-	/** Kein Ersticken, wenn der Kopf in Blättern steckt, und kein Fallschaden. */
+	/** Kein Ersticken, wenn der Kopf in Blättern steckt, kein Fallschaden und keine Explosionen (die eigenen Pfeile!). */
 	@Override
 	public boolean isInvulnerableTo(DamageSource damageSource) {
 		return damageSource.isOf(DamageTypes.IN_WALL)
 				|| damageSource.isOf(DamageTypes.FALL)
 				|| damageSource.isOf(DamageTypes.CRAMMING)
+				|| damageSource.isIn(DamageTypeTags.IS_EXPLOSION)
 				|| super.isInvulnerableTo(damageSource);
 	}
 
@@ -284,6 +294,27 @@ public class RiesenskelettEntity extends PathAwareEntity implements JumpingMount
 			this.setVelocity(this.getVelocity().add(-0.8 * sin * strength, 0.0, 0.8 * cos * strength));
 		}
 		this.velocityDirty = true;
+	}
+
+	// ---------------------------------------------------------------- Schießen
+
+	/** Verschießt einen explodierenden Riesenpfeil dorthin, wo der Reiter hinschaut. Nur auf dem Server. */
+	public void shootRiesenpfeil(PlayerEntity rider) {
+		long now = this.getWorld().getTime();
+		if (now - this.lastShotTime < SHOOT_COOLDOWN_TICKS) {
+			return;
+		}
+		this.lastShotTime = now;
+
+		RiesenpfeilEntity arrow = new RiesenpfeilEntity(this.getWorld(), rider);
+		// Etwas vor dem Reiter starten, damit der Pfeil nicht im eigenen Kopf steckt.
+		Vec3d start = rider.getEyePos().add(rider.getRotationVec(1.0f).multiply(4.0));
+		arrow.setPosition(start);
+		arrow.setVelocity(rider, rider.getPitch(), rider.getYaw(), 0.0f, ARROW_SPEED, 0.0f);
+		this.getWorld().spawnEntity(arrow);
+
+		this.swingHand(Hand.MAIN_HAND);
+		this.playSound(SoundEvents.ENTITY_SKELETON_SHOOT, 3.0f, 0.5f);
 	}
 
 	// ---------------------------------------------------------------- Aufschlag + Krater

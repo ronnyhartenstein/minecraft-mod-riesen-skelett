@@ -15,6 +15,7 @@ Vanilla-Textur, nur zehnmal so groß.
 | **Gegen eine Wand laufen** | Stufen bis **8 Blöcke** Höhe steigt es einfach hoch. |
 | **Leertaste halten, loslassen** | Sprung (Sprungleiste wie beim Pferd) – voll aufgeladen bis **20 Blöcke** hoch. |
 | **Sturz aus mehr als 50 Blöcken** | Beim Aufschlag gibt der Boden nach: die Blöcke darunter fliegen zur Seite weg und es bleibt ein Krater. Grundgestein und Truhen bleiben heil; mit `/gamerule mobGriefing false` gibt es nur den Knall. |
+| **Linksklick** (beim Reiten) | Das Skelett verschießt einen Riesenpfeil dorthin, wo du hinschaust. Beim Aufkommen explodiert er wie TNT. Das Skelett selbst nimmt keinen Explosionsschaden. |
 | **Schleichen** | Absteigen – du landest sicher neben dem Fuß. |
 
 Weder Reiter noch Skelett nehmen Fallschaden. Das Skelett gibt es nur als
@@ -41,8 +42,11 @@ src/main/java/de/rhflow/minecraft/riesenskelett/
   RiesenskelettClient.java             Einstiegspunkt Client (Renderer)
   registry/ModEntities.java            EntityType "riesenskelett" (20 hoch, 3 breit)
   registry/ModItems.java               Spawn-Ei
-  entity/RiesenskelettEntity.java      Reiten, Steuern, Sprung, Krater, Absteigen
+  entity/RiesenskelettEntity.java      Reiten, Steuern, Sprung, Krater, Schießen, Absteigen
+  entity/RiesenpfeilEntity.java        Pfeil, der beim Aufkommen explodiert
+  network/SchiessenPayload.java        Linksklick-Paket Client → Server
   client/RiesenskelettRenderer.java    Vanilla-Skelettmodell ×10
+  client/RiesenpfeilRenderer.java      Vanilla-Pfeil ×10
 
 src/main/resources/
   assets/riesenskelett/…               Icon, Item-Modell, Sprachdateien (de/en)
@@ -56,5 +60,7 @@ In `RiesenskelettEntity.java`:
 - `FULL_JUMP_VELOCITY` – Sprungkraft (2.0 ≈ 20 Blöcke)
 - `CRATER_FALL_DISTANCE` – ab welcher Fallhöhe der Krater entsteht
 - `MAX_CRATER_BLOCKS` – wie viele Blöcke höchstens wegfliegen
+- `SHOOT_COOLDOWN_TICKS` / `ARROW_SPEED` – Schussrate und Pfeiltempo
+- `EXPLOSION_POWER` in `RiesenpfeilEntity.java` – Explosionsstärke (4 = TNT)
 - `LIMB_SWING_PER_BLOCK` – wie schnell die Beine schwingen
 - `GENERIC_MOVEMENT_SPEED` / `GENERIC_STEP_HEIGHT` in `createRiesenskelettAttributes()`

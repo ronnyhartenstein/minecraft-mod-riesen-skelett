@@ -1,4 +1,5 @@
 {
 	"entity.riesenskelett.riesenskelett": "Riesenskelett",
-	"item.riesenskelett.riesenskelett_spawn_egg": "Riesenskelett-Spawn-Ei"
+	"item.riesenskelett.riesenskelett_spawn_egg": "Riesenskelett-Spawn-Ei",
+	"entity.riesenskelett.riesenpfeil": "Riesenpfeil"
 }

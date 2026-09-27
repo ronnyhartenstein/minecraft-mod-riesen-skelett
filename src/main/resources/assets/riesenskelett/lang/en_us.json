@@ -1,4 +1,5 @@
 {
 	"entity.riesenskelett.riesenskelett": "Giant Skeleton",
-	"item.riesenskelett.riesenskelett_spawn_egg": "Giant Skeleton Spawn Egg"
+	"item.riesenskelett.riesenskelett_spawn_egg": "Giant Skeleton Spawn Egg",
+	"entity.riesenskelett.riesenpfeil": "Giant Arrow"
 }

@@ -1,6 +1,7 @@
 package de.rhflow.minecraft.riesenskelett.registry;
 
 import de.rhflow.minecraft.riesenskelett.RiesenskelettMod;
+import de.rhflow.minecraft.riesenskelett.entity.RiesenpfeilEntity;
 import de.rhflow.minecraft.riesenskelett.entity.RiesenskelettEntity;
 import net.minecraft.entity.Entity;
 import net.minecraft.entity.EntityType;
@@ -25,6 +26,13 @@ public final class ModEntities {
 					.eyeHeight(18.5f)
 					.passengerAttachments(new Vec3d(0.0, RiesenskelettEntity.HEIGHT + 0.4, 2.0))
 					.maxTrackingRange(16));
+
+	/** Explodierender Riesenpfeil, den das Riesenskelett verschießt. */
+	public static final EntityType<RiesenpfeilEntity> RIESENPFEIL = register("riesenpfeil",
+			EntityType.Builder.<RiesenpfeilEntity>create(RiesenpfeilEntity::new, SpawnGroup.MISC)
+					.dimensions(1.0f, 1.0f)
+					.maxTrackingRange(8)
+					.trackingTickInterval(20));
 
 	private static <T extends Entity> EntityType<T> register(String name, EntityType.Builder<T> builder) {
 		return Registry.register(Registries.ENTITY_TYPE, Identifier.of(RiesenskelettMod.MOD_ID, name), builder.build(name));
