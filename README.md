@@ -1,9 +1,19 @@
 # Riesenskelett-Mod
 
+![Das Riesenskelett mit Bogen im Dschungel](docs/skelett.jpg)
+
 Eine kleine Minecraft-Java-Mod (Fabric, 1.21.1), gebaut von Papa und Sohn.
 Sie fügt ein **20 Blöcke hohes Skelett** hinzu, auf dessen Kopf man reiten kann.
 Es sieht aus wie das Original-Skelett – es nutzt das eingebaute Modell und die
 Vanilla-Textur, nur zehnmal so groß.
+
+## Die Skizze
+
+So hat alles angefangen – der Bauplan auf Papier: 20 Blöcke hoch, „Ich“ oben
+auf dem Kopf, Pfeil und Bogen, und wenn es aus 50 Blöcken runterfällt, fliegen
+die Blöcke weg.
+
+![Handgezeichnete Skizze des Riesenskeletts](docs/skizze.jpg)
 
 ## Was das Riesenskelett kann
 
